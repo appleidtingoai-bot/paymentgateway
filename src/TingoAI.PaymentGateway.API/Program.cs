@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.IO;
 using Serilog;
+using DotNetEnv;
 using TingoAI.PaymentGateway.API.Middleware;
 using TingoAI.PaymentGateway.Application.Interfaces;
 using TingoAI.PaymentGateway.Application.Services;
@@ -18,6 +20,38 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
+    // Attempt to load environment variables from a .env file located in
+    // common runtime locations so configuration is available to CreateBuilder.
+    var envCandidates = new[]
+    {
+        Path.Combine(Directory.GetCurrentDirectory(), ".env"),
+        Path.Combine(AppContext.BaseDirectory, ".env")
+    };
+
+    var envLoaded = false;
+    foreach (var envPath in envCandidates)
+    {
+        try
+        {
+            if (File.Exists(envPath))
+            {
+                Env.Load(envPath);
+                Log.Information("Loaded .env from {EnvPath}", envPath);
+                envLoaded = true;
+                break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to load .env from {EnvPath}", envPath);
+        }
+    }
+
+    if (!envLoaded)
+    {
+        Log.Warning("No .env found in candidate paths; falling back to environment variables.");
+    }
+
     var builder = WebApplication.CreateBuilder(args);
 
     // Add Serilog
@@ -86,7 +120,10 @@ try
     app.UseMiddleware<RequestLoggingMiddleware>();
     app.UseMiddleware<RateLimitingMiddleware>();
 
-    if (app.Environment.IsDevelopment())
+    // Allow enabling Swagger in Production via configuration when needed for debugging.
+    // Default is false; set `EnableSwaggerInProduction=true` in appsettings or environment to enable.
+    var enableSwaggerInProd = builder.Configuration.GetValue<bool>("EnableSwaggerInProduction", false);
+    if (app.Environment.IsDevelopment() || enableSwaggerInProd)
     {
         app.UseSwagger();
         app.UseSwaggerUI(c =>
@@ -96,7 +133,8 @@ try
             // serve the UI at /swagger (default) — change RoutePrefix if you want it at root
             c.RoutePrefix = "swagger";
         });
-        // Redirect root requests to the Swagger UI so GET / doesn't return 404 during development
+
+        // Redirect root requests to the Swagger UI so GET / doesn't return 404 when enabled
         app.MapGet("/", () => Results.Redirect("/swagger"));
     }
 
