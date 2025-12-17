@@ -1,5 +1,5 @@
 [Unit]
-Description=TingoAI Payment Gateway API
+Description=DMCapital Payment Gateway API
 After=network.target
 
 [Service]

@@ -62,7 +62,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
     {
-        c.SwaggerDoc("v1", new() { Title = "TingoAI Payment Gateway API", Version = "v1" });
+        c.SwaggerDoc("v1", new() { Title = "DMCapitals Payment Gateway API", Version = "v1" });
         // Include XML comments if available for better documentation in Swagger UI
         try
         {
@@ -123,15 +123,16 @@ try
     // Allow enabling Swagger in Production via configuration when needed for debugging.
     // Default is false; set `EnableSwaggerInProduction=true` in appsettings or environment to enable.
     var enableSwaggerInProd = builder.Configuration.GetValue<bool>("EnableSwaggerInProduction", false);
+    Log.Information("EnableSwaggerInProduction={EnableSwaggerInProduction}", enableSwaggerInProd);
     if (app.Environment.IsDevelopment() || enableSwaggerInProd)
     {
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
             // Explicitly set endpoint so Swagger UI can find the generated JSON
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "TingoAI Payment Gateway API v1");
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "DMCapitals Payment Gateway API v1");
             // serve the UI at /swagger (default) — change RoutePrefix if you want it at root
-            c.RoutePrefix = "swagger";
+            // c.RoutePrefix = "swagger";
         });
 
         // Redirect root requests to the Swagger UI so GET / doesn't return 404 when enabled
@@ -170,7 +171,7 @@ try
         }
     }
 
-    Log.Information("TingoAI Payment Gateway API starting...");
+    Log.Information("DMCapitals Payment Gateway API starting...");
     app.Run();
 }
 catch (Exception ex)

@@ -10,7 +10,16 @@ public class RedisCache
 
     public RedisCache(IConfiguration configuration)
     {
-        var connectionString = configuration["Redis:ConnectionString"] ?? "localhost:6379";
+        var connectionString = configuration["Redis:ConnectionString"];
+
+        // If no connection string is provided (or it's empty), don't attempt to connect.
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            _redis = null;
+            _database = null;
+            return;
+        }
+
         try
         {
             _redis = ConnectionMultiplexer.Connect(connectionString);
@@ -18,7 +27,7 @@ public class RedisCache
         }
         catch
         {
-            // If Redis is not available locally, continue without caching.
+            // If Redis is not available, continue without caching.
             _redis = null;
             _database = null;
         }
