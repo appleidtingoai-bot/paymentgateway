@@ -132,7 +132,7 @@ try
             // Explicitly set endpoint so Swagger UI can find the generated JSON
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "DMCapitals Payment Gateway API v1");
             // serve the UI at /swagger (default) — change RoutePrefix if you want it at root
-            // c.RoutePrefix = "swagger";
+            c.RoutePrefix = "swagger";
         });
 
         // Redirect root requests to the Swagger UI so GET / doesn't return 404 when enabled
